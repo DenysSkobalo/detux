@@ -1,0 +1,8 @@
+- real mode
+- protected mode
+- BIOS
+- stack
+- page tables
+- virtual memory
+- memory pool
+- interrupts
