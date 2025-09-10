@@ -1,20 +1,36 @@
-CC = gcc
+ASM = nasm
+ASMFLAGS = -f bin
+
+CC = i386-elf-gcc
 CFLAGS = -Wall -m32 -ffreestanding -fno-pic -nostdlib -g
-LDFLAGS = -T linker.ld
 
-SRC = kernel/src/main.c kernel/src/memory.c
-OBJ = $(SRC:.c=.o)
-KERNEL = kernel.bin
+QEMU = qemu-system-i386
+QEMUFLAGS = -drive format=raw,file=bootloader.bin
 
-# Compiler kernel
-$(OUT): $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ $^
+BOOT = boot/bootloader.asm
+BOOT_BIN = bootloader.bin
 
-# Building object files
+KERNEL_SRC = $(wildcard kernel/src/*.c)
+KERNEL_OBJ = $(KERNEL_SRC:.c=.o)
+KERNEL_BIN = kernel.bin
+
+all: $(BOOT_BIN)
+
+# Bootloader
+$(BOOT_BIN): $(BOOT)
+	$(ASM) $(ASMFLAGS) $< -o $@
+
+# Kernel 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Cleaning
-clean:
-	rm -f $(OBJ) $(KERNEL)
+$(KERNEL_BIN): $(KERNEL_OBJ)
+	$(CC) $(CFLAGS) -T linker.ld -o $@ $^
 
+# Run in QEMU
+run: $(BOOT_BIN)
+	$(QEMU) $(QEMUFLAGS)
+
+# Clean
+clean:
+	rm -f $(BOOT_BIN) $(KERNEL_OBJ) $(KERNEL_BIN)
