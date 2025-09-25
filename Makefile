@@ -60,7 +60,18 @@ qemu: $(ISO_DIR)/detux.iso
 
 # === Run ISO in QEMU with terminal output ===
 docker: $(ISO_DIR)/detux.iso
-	$(QEMU) -cdrom $< -m 512M -curses
+	docker run --rm -it \
+		  -v "$(PWD)":/detux \
+		  -w /detux \
+		  detux \
+		  $(QEMU) -cdrom $< -m 512M -curses
+
+# === Build docker container ===
+dc: 
+	 docker build -t detux .
+
+ddc: 
+	docker rmi detux
 
 # === Clean build and iso folders ===
 clean:
